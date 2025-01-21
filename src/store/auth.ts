@@ -8,9 +8,9 @@ type IAuthAction = {
   setToken(token: string): void;
 };
 
-export type IAuthStore = IAuthAction & IAuthState;
+export type IAuthSlice = IAuthAction & IAuthState;
 
-export const authStore: StateCreator<IAuthStore> = (set) => ({
+export const authSlice: StateCreator<IAuthSlice> = (set) => ({
   token: null,
   setToken(token) {
     set({ token: token });

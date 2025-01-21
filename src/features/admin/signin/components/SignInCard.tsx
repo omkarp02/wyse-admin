@@ -21,6 +21,8 @@ import { IApiError } from "../../../../types/errors";
 import CSnackbar from "../../../../components/CSnackbar";
 import { loginApi } from "../../../../api/auth/user-account";
 import useToast from "../../../../hooks/useToast";
+import { useBoundStore } from "../../../../store/store";
+import { useNavigate } from "react-router-dom";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -38,12 +40,10 @@ const Card = styled(MuiCard)(({ theme }) => ({
   [theme.breakpoints.down("sm")]: {
     boxShadow: "none",
     border: "none",
-    padding: 0
+    padding: 0,
+    backgroundColor: "transparent",
   },
-  ...theme.applyStyles("dark", {
-    boxShadow:
-      "hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px",
-  }),
+  ...theme.applyStyles("dark", {}),
 }));
 
 const loginSchema = z.object({
@@ -57,6 +57,8 @@ export default function SignInCard() {
   const [open, setOpen] = React.useState(false);
   const [screenLoader, setScreenLoader] = React.useState(false);
   const { toast, setToast, closeToast, toastISE } = useToast();
+  const setToken = useBoundStore((state) => state.setToken);
+  const navigate = useNavigate()
 
   const {
     register,
@@ -70,9 +72,9 @@ export default function SignInCard() {
     try {
       setScreenLoader(true);
       const res = await loginApi(data);
-      console.log(res);
+      console.log(res)
       // setToken(res.data.accessToken);
-      // router.push("/");
+      // navigate("/")
     } catch (error) {
       const typeError = error as IApiError;
       console.log(typeError);

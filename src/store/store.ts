@@ -1,15 +1,15 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
+import { authSlice, IAuthSlice } from "./auth";
 import { immer } from "zustand/middleware/immer";
-import { authStore, IAuthStore } from "./auth";
 
-type IBoundStore = IAuthStore;
+type IBoundStore = IAuthSlice;
 
 export const useBoundStore = create<IBoundStore>()(
   devtools(
     persist(
       immer((...a) => ({
-        ...authStore(...a),
+        ...authSlice(...a),
       })),
       {
         name: "store",

@@ -10,7 +10,7 @@ export default function Layout(props: { disableCustomTheme?: boolean }) {
       <AppTheme {...props}>
         <CssBaseline enableColorScheme />
         <main>
-          <Navbar />
+          {/* <Navbar /> */}
           <Suspense fallback={<>Loading...</>}>
             <Outlet />
           </Suspense>
