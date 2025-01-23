@@ -22,3 +22,7 @@ export const mobileSchema = z
 export const genderSchema = z.enum(["male", "female", "other"], {
   message: "Gender must be male, female, or other",
 });
+
+export const nameSchema = z
+.string()
+.min(1, "Name must be at least 1 characters long");

@@ -241,8 +241,8 @@ export const inputsCustomizations: Components<Theme> = {
           backgroundColor: gray[200],
         },
         ...theme.applyStyles('dark', {
-          backgroundColor: gray[800],
-          borderColor: gray[700],
+          backgroundColor: "transparent",
+          border: "none",
           '&:hover': {
             backgroundColor: gray[900],
             borderColor: gray[600],

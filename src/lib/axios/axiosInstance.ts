@@ -3,12 +3,13 @@ import { BACKEND_URL } from "../../constants/common";
 import { getToken } from "../../utils/helper";
 import { handleRefreshTokenApi } from "../../api/auth/user-account";
 import { useBoundStore } from "../../store/store";
+import { ERROR_STATUS } from "../../constants/errors";
 
 const axiosInstance = axios.create({
   baseURL: BACKEND_URL, // Replace with your API base URL
   timeout: 1000,
   headers: { "Content-Type": "application/json" },
-  withCredentials: true
+  withCredentials: true,
 });
 
 let isRefreshing = false;
@@ -31,7 +32,6 @@ axiosInstance.interceptors.request.use(
   function (config) {
     const token = getToken();
 
-
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -49,8 +49,7 @@ axiosInstance.interceptors.response.use(
   },
   async function (error) {
     const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry &&  error?.response?.data?.status === ERROR_STATUS.INVALID_TOKEN) {
       if (isRefreshing) {
         // If a refresh request is already in progress, queue the request
         return new Promise((resolve, reject) => {
@@ -83,9 +82,12 @@ axiosInstance.interceptors.response.use(
         processQueue(refreshError, null); // Reject queued requests
         isRefreshing = false;
         // Redirect to login or handle logout
-        
+        const reset = useBoundStore.getState().reset;
+        reset();
         return Promise.reject(refreshError);
       }
+    }  else {
+      return Promise.reject(error);
     }
   }
 );

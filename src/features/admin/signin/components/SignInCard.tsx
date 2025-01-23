@@ -23,6 +23,9 @@ import { loginApi } from "../../../../api/auth/user-account";
 import useToast from "../../../../hooks/useToast";
 import { useBoundStore } from "../../../../store/store";
 import { useNavigate } from "react-router-dom";
+import { ROLE } from "../../../../constants/common";
+import PathConstants from "../../../../routes/pathConstants";
+import { getMutationErrorMsg } from "../../../../utils/error";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -57,8 +60,8 @@ export default function SignInCard() {
   const [open, setOpen] = React.useState(false);
   const [screenLoader, setScreenLoader] = React.useState(false);
   const { toast, setToast, closeToast, toastISE } = useToast();
-  const setToken = useBoundStore((state) => state.setToken);
-  const navigate = useNavigate()
+  const setAuth = useBoundStore((state) => state.setAuth);
+  const navigate = useNavigate();
 
   const {
     register,
@@ -71,19 +74,19 @@ export default function SignInCard() {
   const onSubmit: SubmitHandler<IFormFields> = async (data) => {
     try {
       setScreenLoader(true);
-      const res = await loginApi(data);
-      console.log(res)
-      // setToken(res.data.accessToken);
-      // navigate("/")
+      const loginPayload = {
+        userId: data.email,
+        password: data.password,
+      };
+      const res = await loginApi(loginPayload);
+      setAuth(res.data.accessToken, res.data.role[0]);
+      navigate(PathConstants.HOME);
     } catch (error) {
-      const typeError = error as IApiError;
-      console.log(typeError);
-      if (typeError.status === ERROR_STATUS.INVALID_CRED) {
-        setToast("error", "Invalid Credentails");
-      } else if (typeError.status === ERROR_STATUS.ALREADY_EXIST) {
-        setToast("error", "Account already exists, please sign in");
+      const { msg, status } = getMutationErrorMsg(error);
+      if (status === ERROR_STATUS.UNHANDLED) {
+        setToast("error", msg);
       } else {
-        toastISE();
+        setToast("error", "Invalid Credentails");
       }
     } finally {
       setScreenLoader(false);
