@@ -23,6 +23,22 @@ export const genderSchema = z.enum(["male", "female", "other"], {
   message: "Gender must be male, female, or other",
 });
 
+export const pincodeSchema = z
+  .number()
+  .int()
+  .min(100000, { message: "Pincode must be at least 6 digits" })
+  .max(999999, { message: "Pincode must be at most 6 digits" });
+
+export const AddressSchema = z.object({
+  address: z.string(),
+  city: z.string(),
+  state: z.string(),
+  country: z.string(),
+  pincode: pincodeSchema,
+  mobileNo: mobileSchema,
+  alternateMobileNo: mobileSchema,
+});
+
 export const nameSchema = z
-.string()
-.min(1, "Name must be at least 1 characters long");
+  .string()
+  .min(1, "Name must be at least 1 characters long");
