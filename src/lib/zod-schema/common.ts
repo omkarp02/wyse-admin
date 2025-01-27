@@ -29,16 +29,29 @@ export const pincodeSchema = z
   .min(100000, { message: "Pincode must be at least 6 digits" })
   .max(999999, { message: "Pincode must be at most 6 digits" });
 
-export const AddressSchema = z.object({
+export const addressSchema = z.object({
   address: z.string(),
   city: z.string(),
   state: z.string(),
   country: z.string(),
   pincode: pincodeSchema,
   mobileNo: mobileSchema,
-  alternateMobileNo: mobileSchema,
+  alternateMobileNo: mobileSchema.optional(),
 });
+
+export const contactSchema = z.object({
+  type: z.enum(["mobile", "email"]), // Define possible contact types
+  value: z.string().min(1, { message: "Contact value is required" }),
+});
+
+export const websiteSchema = z
+  .string()
+  .url({ message: "Invalid URL" });
 
 export const nameSchema = z
   .string()
   .min(1, "Name must be at least 1 characters long");
+
+export const descriptionSchema = z
+  .string()
+  .min(1, "Description must be at least 1 characters long");
