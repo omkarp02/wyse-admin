@@ -36,14 +36,22 @@ export const addressSchema = z.object({
   country: z.string(),
   pincode: pincodeSchema,
   mobileNo: mobileSchema,
-  alternateMobileNo: mobileSchema,
+  alternateMobileNo: mobileSchema.optional(),
 });
 
 export const contactSchema = z.object({
-  type: z.enum(["mobile", "email"]), // Assuming limited contact types
-  value: z.string(),
+  type: z.enum(["mobile", "email"]), // Define possible contact types
+  value: z.string().min(1, { message: "Contact value is required" }),
 });
+
+export const websiteSchema = z
+  .string()
+  .url({ message: "Invalid URL" });
 
 export const nameSchema = z
   .string()
   .min(1, "Name must be at least 1 characters long");
+
+export const descriptionSchema = z
+  .string()
+  .min(1, "Description must be at least 1 characters long");
