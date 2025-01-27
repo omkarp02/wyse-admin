@@ -29,7 +29,7 @@ export const pincodeSchema = z
   .min(100000, { message: "Pincode must be at least 6 digits" })
   .max(999999, { message: "Pincode must be at most 6 digits" });
 
-export const AddressSchema = z.object({
+export const addressSchema = z.object({
   address: z.string(),
   city: z.string(),
   state: z.string(),
@@ -37,6 +37,11 @@ export const AddressSchema = z.object({
   pincode: pincodeSchema,
   mobileNo: mobileSchema,
   alternateMobileNo: mobileSchema,
+});
+
+export const contactSchema = z.object({
+  type: z.enum(["mobile", "email"]), // Assuming limited contact types
+  value: z.string(),
 });
 
 export const nameSchema = z
