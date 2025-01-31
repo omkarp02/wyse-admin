@@ -28,6 +28,7 @@ import {
   ICreateCategoryApi,
 } from "../../../api/clothes/category";
 import { CREATE_CATEGORY_INITIAL_VALUE } from "../../../features/admin/category/data";
+import { STATUS } from "../../../constants/common";
 
 const FormGrid = styled(Grid)(() => ({
   display: "flex",
@@ -40,6 +41,7 @@ const CreateCategoryPage = () => {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<ICategoryFormFields>({
     resolver: zodResolver(categorySchema),
@@ -52,11 +54,12 @@ const CreateCategoryPage = () => {
   const createMutation = useMutation({
     mutationFn: (payload: ICreateCategoryApi) => createCategoryApi(payload),
     onSuccess: (data, id) => {
-      console.log(data);
+      setToast("success", "Category Created Successfully")
+      reset()
       // navigate(PathConstants.OWNER);
     },
     onError: (error) => {
-      const { msg } = getMutationErrorMsg(error);
+      const { msg } = getMutationErrorMsg(error, "Category");
       setToast("error", msg);
     },
     onSettled: () => {
@@ -65,12 +68,15 @@ const CreateCategoryPage = () => {
   });
 
   const onSubmit: SubmitHandler<ICategoryFormFields> = async (data) => {
-    // console.log(data)
     setScreenLoader(true);
-    createMutation.mutate(data);
-  };
 
-  console.log(errors);
+    const formattedData: ICreateCategoryApi = {
+      ...data,
+      status: data.isActive ? STATUS.ACTIVE : STATUS.IN_ACTIVE
+    }
+
+    createMutation.mutate(formattedData);
+  };
 
   return (
     <>

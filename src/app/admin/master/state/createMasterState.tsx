@@ -22,10 +22,12 @@ import { z } from "zod";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { nameSchema } from "../../../../lib/zod-schema/common";
+import {
+  IMasterStateFormFields,
+  masterStateSchema,
+} from "../../../../features/admin/master/zod-schema";
 import useToast from "../../../../hooks/useToast";
-import { createFilterApi, createFilterTypeApi, ICreateFilterType } from "../../../../api/clothes/filter";
+import { createStateApi, ICreateStateApi } from "../../../../api/master/state";
 import { getMutationErrorMsg } from "../../../../utils/error";
 import CSnackbar from "../../../../components/CSnackbar";
 
@@ -34,35 +36,27 @@ const FormGrid = styled(Grid)(() => ({
   flexDirection: "column",
 }));
 
-
-const filterSchema = z.object({
-  name: nameSchema,
-});
-
-type IFormFields = z.infer<typeof filterSchema>;
-
-const CreateFilterTypePage = () => {
-
+const CreateMasterStatePage = () => {
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<IFormFields>({
-    resolver: zodResolver(filterSchema),
+  } = useForm<IMasterStateFormFields>({
+    resolver: zodResolver(masterStateSchema),
   });
 
   const { toast, setToast, closeToast } = useToast();
   const [screenLoader, setScreenLoader] = React.useState(false);
 
   const createMutation = useMutation({
-    mutationFn: (payload: ICreateFilterType) => createFilterTypeApi(payload),
+    mutationFn: (payload: ICreateStateApi) => createStateApi(payload),
     onSuccess: (data, id) => {
-      reset()
-      setToast("success", "Fitler Type Created Successfully");
+      reset();
+      setToast("success", "state Created Successfully");
     },
     onError: (error) => {
-      const { msg } = getMutationErrorMsg(error);
+      const { msg } = getMutationErrorMsg(error, "State");
       setToast("error", msg);
     },
     onSettled: () => {
@@ -70,7 +64,8 @@ const CreateFilterTypePage = () => {
     },
   });
 
-  const onSubmit: SubmitHandler<IFormFields> = async (data) => {
+  const onSubmit: SubmitHandler<IMasterStateFormFields> = async (data) => {
+    console.log(data);
     setScreenLoader(true);
     createMutation.mutate(data);
   };
@@ -81,7 +76,7 @@ const CreateFilterTypePage = () => {
     <>
       <Box sx={{ padding: { xs: 2, md: 5 } }}>
         <Typography variant="h4" marginY={4}>
-          Create Filter Type
+          Create State
         </Typography>
         <Box component={"form"} onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={3}>
@@ -135,4 +130,4 @@ const CreateFilterTypePage = () => {
   );
 };
 
-export default CreateFilterTypePage;
+export default CreateMasterStatePage;

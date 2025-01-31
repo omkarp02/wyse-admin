@@ -28,6 +28,7 @@ import useToast from "../../../../hooks/useToast";
 import { createFilterApi, createFilterTypeApi, ICreateFilterType } from "../../../../api/clothes/filter";
 import { getMutationErrorMsg } from "../../../../utils/error";
 import CSnackbar from "../../../../components/CSnackbar";
+import { createBatchApi, ICreateBatchApi } from "../../../../api/clothes/batch";
 
 const FormGrid = styled(Grid)(() => ({
   display: "flex",
@@ -35,11 +36,11 @@ const FormGrid = styled(Grid)(() => ({
 }));
 
 
-const filterSchema = z.object({
+const productbatchSchema = z.object({
   name: nameSchema,
 });
 
-type IFormFields = z.infer<typeof filterSchema>;
+type IFormFields = z.infer<typeof productbatchSchema>;
 
 const CreateFilterTypePage = () => {
 
@@ -49,17 +50,17 @@ const CreateFilterTypePage = () => {
     reset,
     formState: { errors },
   } = useForm<IFormFields>({
-    resolver: zodResolver(filterSchema),
+    resolver: zodResolver(productbatchSchema),
   });
 
   const { toast, setToast, closeToast } = useToast();
   const [screenLoader, setScreenLoader] = React.useState(false);
 
   const createMutation = useMutation({
-    mutationFn: (payload: ICreateFilterType) => createFilterTypeApi(payload),
+    mutationFn: (payload: ICreateBatchApi) => createBatchApi(payload),
     onSuccess: (data, id) => {
       reset()
-      setToast("success", "Fitler Type Created Successfully");
+      setToast("success", "Batch Created Successfully");
     },
     onError: (error) => {
       const { msg } = getMutationErrorMsg(error);
@@ -81,7 +82,7 @@ const CreateFilterTypePage = () => {
     <>
       <Box sx={{ padding: { xs: 2, md: 5 } }}>
         <Typography variant="h4" marginY={4}>
-          Create Filter Type
+          Create Batch
         </Typography>
         <Box component={"form"} onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={3}>

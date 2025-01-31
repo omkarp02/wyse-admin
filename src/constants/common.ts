@@ -6,4 +6,10 @@ export const enum ROLE {
   USER = "user",
 }
 
+export const enum STATUS {
+  ACTIVE = 'active',
+  IN_ACTIVE = 'inActive', 
+  ARCHIVE='archive'
+}
+
 export const API_GET_LIMIT = 10

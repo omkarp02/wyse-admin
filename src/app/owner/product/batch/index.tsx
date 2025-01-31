@@ -12,24 +12,24 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { GET_ALL_FILTER, GET_ALL_FILTER_TYPE } from "../../../constants/react-query";
-import { getFilterApi } from "../../../api/clothes/filter";
-import { API_GET_LIMIT } from "../../../constants/common";
-import PathConstants from "../../../routes/pathConstants";
-import NoDataTable from "../../../components/ui/NoData";
-import CBackDrop from "../../../components/loader/CBackDrop";
+import {  GET_ALL_FILTER_TYPE, GET_ALL_OWNER, GET_ALL_PRODUCT_BATCH } from "../../../../constants/react-query";
+import { getFilterApi, getFilterTypeApi } from "../../../../api/clothes/filter";
+import { API_GET_LIMIT } from "../../../../constants/common";
+import NoDataTable from "../../../../components/ui/NoData";
+import CBackDrop from "../../../../components/loader/CBackDrop";
+import PathConstants from "../../../../routes/pathConstants";
+import { getBatchApi } from "../../../../api/clothes/batch";
 
-
-const FilterTypePage = () => {
+const ProductBatchPage = () => {
   // const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
   // const name = searchParams.get("name");
 
   const { data, isLoading } = useQuery({
-    queryKey: [GET_ALL_FILTER],
+    queryKey: [GET_ALL_PRODUCT_BATCH],
     queryFn: async () =>
-      await getFilterApi({ page: 1, limit: API_GET_LIMIT }),
+      await getBatchApi({ page: 1, limit: API_GET_LIMIT }),
   });
 
   const list = data?.data;
@@ -41,7 +41,7 @@ const FilterTypePage = () => {
           <Button
             startIcon={<AddOutlinedIcon />}
             onClick={() => {
-              navigate(PathConstants.FILTER_CREATE);
+              navigate(PathConstants.PRODUCT_BATCH_CREATE);
             }}
             sx={{my: 2}}
             variant="contained"
@@ -83,4 +83,4 @@ const FilterTypePage = () => {
   );
 };
 
-export default FilterTypePage;
+export default ProductBatchPage;

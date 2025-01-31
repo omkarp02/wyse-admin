@@ -22,26 +22,27 @@ import { z } from "zod";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { nameSchema } from "../../../../lib/zod-schema/common";
-import useToast from "../../../../hooks/useToast";
-import { createFilterApi, createFilterTypeApi, ICreateFilterType } from "../../../../api/clothes/filter";
-import { getMutationErrorMsg } from "../../../../utils/error";
-import CSnackbar from "../../../../components/CSnackbar";
+import useToast from "../../../hooks/useToast";
+import { ICreateCategoryApi } from "../../../api/clothes/category";
+import { createMasterApi, ICreateMasterApi } from "../../../api/master";
+import { getMutationErrorMsg } from "../../../utils/error";
+import CSnackbar from "../../../components/CSnackbar";
+import { useParams } from "react-router-dom";
+import _ from "lodash";
 
 const FormGrid = styled(Grid)(() => ({
   display: "flex",
   flexDirection: "column",
 }));
 
-
-const filterSchema = z.object({
-  name: nameSchema,
+const masterSchema = z.object({
+  name: z.string(),
 });
 
-type IFormFields = z.infer<typeof filterSchema>;
+type IFormFields = z.infer<typeof masterSchema>;
 
-const CreateFilterTypePage = () => {
+const CreateMasterPage = () => {
+  const { type } = useParams();
 
   const {
     register,
@@ -49,17 +50,21 @@ const CreateFilterTypePage = () => {
     reset,
     formState: { errors },
   } = useForm<IFormFields>({
-    resolver: zodResolver(filterSchema),
+    resolver: zodResolver(masterSchema),
   });
+
+  if (!type ) return <></>
+
+  const master_type = _.capitalize(type);
 
   const { toast, setToast, closeToast } = useToast();
   const [screenLoader, setScreenLoader] = React.useState(false);
 
   const createMutation = useMutation({
-    mutationFn: (payload: ICreateFilterType) => createFilterTypeApi(payload),
+    mutationFn: (payload: ICreateMasterApi) => createMasterApi(payload),
     onSuccess: (data, id) => {
-      reset()
-      setToast("success", "Fitler Type Created Successfully");
+      reset();
+      setToast("success", "master Created Successfully");
     },
     onError: (error) => {
       const { msg } = getMutationErrorMsg(error);
@@ -71,8 +76,9 @@ const CreateFilterTypePage = () => {
   });
 
   const onSubmit: SubmitHandler<IFormFields> = async (data) => {
+    console.log(data);
     setScreenLoader(true);
-    createMutation.mutate(data);
+    createMutation.mutate({ type: type, name: data.name });
   };
 
   console.log(errors);
@@ -81,13 +87,13 @@ const CreateFilterTypePage = () => {
     <>
       <Box sx={{ padding: { xs: 2, md: 5 } }}>
         <Typography variant="h4" marginY={4}>
-          Create Filter Type
+          Create Master {master_type}
         </Typography>
         <Box component={"form"} onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={3}>
             <FormGrid size={{ xs: 12, md: 6 }}>
               <FormLabel htmlFor="first-name" required>
-                Name
+                {master_type} Name
               </FormLabel>
               <OutlinedInput
                 type="text"
@@ -135,4 +141,4 @@ const CreateFilterTypePage = () => {
   );
 };
 
-export default CreateFilterTypePage;
+export default CreateMasterPage;

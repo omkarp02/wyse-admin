@@ -2,7 +2,7 @@ import { ERROR_STATUS } from "../constants/errors";
 import { IToastState } from "../hooks/useToast";
 import { IApiError } from "../types/errors";
 
-export function getMutationErrorMsg(error: any): {
+export function getMutationErrorMsg(error: any, field?: string): {
   msg: string;
   status: number;
 } {
@@ -14,7 +14,7 @@ export function getMutationErrorMsg(error: any): {
     if (status === ERROR_STATUS.INVALID_CRED) {
       msg = "Invalid Credentails";
     } else if (status === ERROR_STATUS.ALREADY_EXIST) {
-      msg = "Account already exists, please sign in";
+      msg = `${field} already exists, please sign in`;
     }
   }
   return { msg, status };

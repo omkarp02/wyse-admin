@@ -28,15 +28,8 @@ export const INITIAL_PRODUCT_VALUES: IFormFields = {
     variations: [
       {
         size: "M",
-        price: 1000.0,
-      },
-      {
-        size: "L",
-        price: 1000.0,
-      },
-      {
-        size: "XL",
-        price: 1000.0,
+        price: 0,
+        discount: 0,
       },
     ],
     imgLink: [
@@ -48,13 +41,13 @@ export const INITIAL_PRODUCT_VALUES: IFormFields = {
     batchId: "677e52c416c63b4e447f4cf0",
   },
   productList: {
-    name: "Free Your Mind Hoodie  ",
-    color: "Beige",
-    price: 5000.0,
+    name: "Zip-Pocket Joggers Olive Green",
+    color: "Olive",
+    price: 800,
     imgLink:
       "https://nobero.com/cdn/shop/files/free-your-mind.jpg?v=1699505964&width=360",
     stock: 10,
-    discount: 35,
+    discount: 50,
     category: "67776e638a1cf8d369ebc97e",
     batchId: "677e52c416c63b4e447f4cf0",
     gender: "M",

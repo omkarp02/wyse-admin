@@ -31,19 +31,78 @@ export const navList: { [key: string]: INavList[] } = {
           label: "State",
           path: PathConstants.MASTER_STATE,
         },
+        {
+          id: "city",
+          label: "City",
+          path: PathConstants.MASTER_CITY,
+        },
+        {
+          id: "gender",
+          label: "Gender",
+          path: PathConstants.MASTER_GENDER,
+        },
+        {
+          id: "color",
+          label: "Color",
+          path: PathConstants.MASTER_COLOR,
+        },
+        {
+          id: "collection",
+          label: "Collection",
+          path: PathConstants.MASTER_PRODUCT_COLLECTION,
+        },
+        {
+          id: "bussiness_category",
+          label: "Bussiness_category",
+          path: PathConstants.MASTER_BUSSINESS_CATEGORY,
+        },
+        {
+          id: "filter",
+          label: "Filter",
+          path: PathConstants.FILTER,
+        },
+        {
+          id: "filter_type",
+          label: "Filter Type",
+          path: PathConstants.FILTER_TYPE,
+        },
+        
+        {
+          id: "category",
+          label: "Category",
+          path: PathConstants.CATEGORY,
+        },
+      ],
+    },
+  ],
+  [ROLE.OWNER]: [
+    {
+      id: "bussiness",
+      label: "Bussiness",
+      children: [
+        {
+          id: " bus",
+          label: "Bussiness",
+          path: PathConstants.BUSSINESS,
+        },
+      ],
+    },
+    {
+      id: "product_section",
+      label: "Product",
+      children: [
+        {
+          id: "product",
+          label: "Product",
+          path: PathConstants.PRODUCT,
+        },
+        {
+          id: "batch",
+          label: "Batch",
+          path: PathConstants.PRODUCT_BATCH,
+        },
       ],
     },
   ],
 };
-// export const navList: { [key: string]: { label: string; value: string }[] } = {
-//   [ROLE.ADMIN]: [
-//     { label: "Owner", value: PathConstants.OWNER },
-//     { label: "Filter", value: PathConstants.FILTER },
-//     { label: "Filter Type", value: PathConstants.FILTER_TYPE },
-//     { label: "Category", value: PathConstants.CATEGORY },
-//   ],
-//   [ROLE.OWNER]: [
-//     { label: "Bussiness", value: PathConstants.BUSSINESS },
-//     { label: "Product", value: PathConstants.PRODUCT },
-//   ],
-// };
+

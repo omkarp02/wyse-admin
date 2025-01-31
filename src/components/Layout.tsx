@@ -6,8 +6,12 @@ import { Box, CssBaseline, Grid2 } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import Sidebar from "./Navbar/Sidebar";
+import { useBoundStore } from "../store/store";
 
 export default function Layout(props: { disableCustomTheme?: boolean }) {
+
+  const token = useBoundStore(state => state.token)
+
   return (
     <>
       <AppTheme {...props}>
@@ -16,7 +20,7 @@ export default function Layout(props: { disableCustomTheme?: boolean }) {
           {" "}
           <main>
             <Grid2 display={"flex"}>
-              <Sidebar />
+              {token && <Sidebar />}
               <div style={{width: '100%'}}>
                 <Suspense fallback={<>Loading...</>}>
                   <Outlet />

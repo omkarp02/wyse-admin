@@ -18,6 +18,7 @@ import {
   Radio,
   RadioGroup,
   Select,
+  TextField,
   Typography,
 } from "@mui/material";
 import {
@@ -44,7 +45,7 @@ import useToast, { TOAST_INITIAL_STATE } from "../../../hooks/useToast";
 import { ERROR_STATUS } from "../../../constants/errors";
 import CSnackbar from "../../../components/CSnackbar";
 import CDateField from "../../../components/formfields/CDateFields";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { createOwnerApi, ICreateOwnerApi } from "../../../api/auth/owner";
 import { getMutationErrorMsg } from "../../../utils/error";
@@ -54,6 +55,17 @@ import {
   createBusinessApi,
   ICreateBussinessApi,
 } from "../../../api/auth/bussiness";
+import {
+  GET_ALL_BUSSINESS,
+  GET_ALL_CATEGORY,
+  GET_ALL_CITY,
+  GET_ALL_OWNER,
+  GET_ALL_STATE,
+} from "../../../constants/react-query";
+import { getCategoryApi } from "../../../api/clothes/category";
+import { API_GET_LIMIT } from "../../../constants/common";
+import { getStateApi } from "../../../api/master/state";
+import { getCityApi } from "../../../api/master/city";
 
 const FormGrid = styled(Grid)(() => ({
   display: "flex",
@@ -78,11 +90,11 @@ const INITIAL_VALUE_CREATE_BUSINESS: IFormFields = {
   description: "hello",
   address: {
     address: "13 Main street near brooklyn",
-    city: "Hong Kong",
-    state: "Bancong",
-    country: "some",
     pincode: 433534,
     mobileNo: "2348334343",
+    city: "",
+    state: "",
+    country: "",
     alternateMobileNo: "7348334343",
   },
   contacts: [
@@ -102,10 +114,21 @@ const CreateBussiness = () => {
     register,
     handleSubmit,
     control,
+    watch,
+    reset,
+    getValues,
+    resetField,
     formState: { errors },
   } = useForm<IFormFields>({
     resolver: zodResolver(businessSchema),
-    defaultValues: INITIAL_VALUE_CREATE_BUSINESS,
+    defaultValues: {
+      contacts: [
+        {
+          type: "mobile",
+          value: "",
+        },
+      ],
+    }
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -119,7 +142,8 @@ const CreateBussiness = () => {
   const createMutation = useMutation({
     mutationFn: (payload: ICreateBussinessApi) => createBusinessApi(payload),
     onSuccess: (data, id) => {
-      // navigate(PathConstants.OWNER);
+      reset()
+      setToast("success", "Bussiness Created Successfully")
     },
     onError: (error) => {
       const { msg } = getMutationErrorMsg(error);
@@ -130,11 +154,37 @@ const CreateBussiness = () => {
     },
   });
 
+  const { data: categoryData } = useQuery({
+    queryKey: [GET_ALL_CATEGORY],
+    queryFn: async () =>
+      await getCategoryApi({ page: 1, limit: API_GET_LIMIT }),
+  });
+
+  const { data: stateData } = useQuery({
+    queryKey: [GET_ALL_STATE],
+    queryFn: async () => await getStateApi({ page: 1, limit: API_GET_LIMIT }),
+  });
+
   const onSubmit: SubmitHandler<IFormFields> = async (data) => {
     setScreenLoader(true);
     createMutation.mutate(data);
   };
 
+  console.log({ errors: errors });
+
+  console.log(getValues().address?.city);
+
+  const state = watch("address.state");
+
+  const { data: cityData } = useQuery({
+    queryKey: [GET_ALL_CITY, state],
+    queryFn: async () =>
+      await getCityApi({ page: 1, limit: API_GET_LIMIT, stateId: state }),
+  });
+
+  React.useEffect(()=> {
+    resetField("address.city")
+  },[state])
 
   return (
     <>
@@ -163,13 +213,12 @@ const CreateBussiness = () => {
               <FormLabel htmlFor="last-name" required>
                 Category
               </FormLabel>
-              <OutlinedInput
-                type="text"
-                {...register("category")}
-                placeholder="Doe"
-                autoComplete="last name"
-                size="small"
-              />
+
+              <Select {...register("category")}>
+                {categoryData?.data.map((e: any) => {
+                  return <MenuItem value={e.id}>{e.name}</MenuItem>;
+                })}
+              </Select>
             </FormGrid>
             <FormGrid size={{ xs: 12, md: 6 }}>
               <FormLabel htmlFor="last-name" required>
@@ -283,32 +332,29 @@ const CreateBussiness = () => {
               />
             </FormGrid>
 
-            {/* City */}
-            <FormGrid size={{ xs: 12, md: 6 }}>
-              <FormLabel htmlFor="city" required>
-                City
-              </FormLabel>
-              <OutlinedInput
-                type="text"
-                {...register("address.city")}
-                placeholder="Hong Kong"
-                autoComplete="address-level2"
-                size="small"
-              />
-            </FormGrid>
-
             {/* State */}
             <FormGrid size={{ xs: 12, md: 6 }}>
               <FormLabel htmlFor="state" required>
                 State
               </FormLabel>
-              <OutlinedInput
-                type="text"
-                {...register("address.state")}
-                placeholder="Bancong"
-                autoComplete="address-level1"
-                size="small"
-              />
+
+              <Select {...register("address.state")}>
+                {stateData?.data.map((e: any) => {
+                  return <MenuItem value={e.id}>{e.name}</MenuItem>;
+                })}
+              </Select>
+            </FormGrid>
+
+            {/* City */}
+            <FormGrid size={{ xs: 12, md: 6 }}>
+              <FormLabel htmlFor="city" required>
+                City
+              </FormLabel>
+              <Select {...register("address.city")}>
+                {cityData?.data.map((e: any) => {
+                  return <MenuItem value={e.id}>{e.name}</MenuItem>;
+                })}
+              </Select>
             </FormGrid>
 
             {/* Country */}
@@ -330,12 +376,11 @@ const CreateBussiness = () => {
               <FormLabel htmlFor="pincode" required>
                 Pincode
               </FormLabel>
-              <OutlinedInput
-                type="text"
-                {...register("address.pincode")}
-                placeholder="433534"
-                autoComplete="postal-code"
-                size="small"
+              <TextField
+                type="number"
+                {...register("address.pincode", {
+                  setValueAs: (value) => (value ? Number(value) : 0), // Convert to number
+                })}
               />
             </FormGrid>
 
@@ -406,4 +451,4 @@ const CreateBussiness = () => {
   );
 };
 
-export default CreateBussiness
+export default CreateBussiness;

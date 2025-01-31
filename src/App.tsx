@@ -11,9 +11,10 @@ import routes from "./routes";
 import ReactQueryProvider from "./lib/provider/ReactQueryProvider";
 
 function App() {
+
   const router = createBrowserRouter([
     {
-      element: <Layout />,
+      element: <Layout  />,
       errorElement: <PageNotFound />,
       children: routes,
     },

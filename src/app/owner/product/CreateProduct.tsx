@@ -11,7 +11,9 @@ import {
   Select,
   MenuItem,
   FormLabel,
+  Divider,
 } from "@mui/material";
+import QuillEditor from "react-quill";
 import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
 import {
@@ -20,7 +22,7 @@ import {
   useFieldArray,
   useForm,
 } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -29,13 +31,28 @@ import useToast from "../../../hooks/useToast";
 import CSnackbar from "../../../components/CSnackbar";
 import { getMutationErrorMsg } from "../../../utils/error";
 import PathConstants from "../../../routes/pathConstants";
-import { productSchema } from "../../../features/owner/libs/zod-schema";
+import {
+  IProductSchemaFormFields,
+  productSchema,
+} from "../../../features/owner/libs/zod-schema";
 import { INITIAL_PRODUCT_VALUES } from "../../../features/owner/data/form";
-import { IProductFormFields } from "../../../features/owner/types/api";
 import {
   createProductApi,
   ICreateProductApi,
 } from "../../../api/clothes/product";
+import { API_GET_LIMIT } from "../../../constants/common";
+import {
+  GET_ALL_CATEGORY,
+  GET_ALL_FILTER,
+  GET_ALL_MASTER,
+  GET_ALL_PRODUCT_BATCH,
+  GET_ALL_SIZE,
+} from "../../../constants/react-query";
+import { getMasterApi } from "../../../api/master";
+import RichTextEditor from "../../../components/formfields/RichTextEditor";
+import { getCategoryApi } from "../../../api/clothes/category";
+import { getBatchApi } from "../../../api/clothes/batch";
+import { getFilterApi } from "../../../api/clothes/filter";
 
 // Zod Schema for Product Creation
 
@@ -55,12 +72,16 @@ const CreateProduct = () => {
   const {
     register,
     handleSubmit,
+    watch,
+    getValues,
     control,
     formState: { errors },
-  } = useForm<IProductFormFields>({
+  } = useForm<IProductSchemaFormFields>({
     resolver: zodResolver(productSchema),
     defaultValues: INITIAL_PRODUCT_VALUES,
   });
+
+  console.log(">>>>>>>>> value", getValues().detail.variations);
 
   //   Variations Field Array
   const {
@@ -82,6 +103,54 @@ const CreateProduct = () => {
     name: "detail.imgLink" as const,
   });
 
+  const { data: masterData } = useQuery({
+    queryKey: [GET_ALL_MASTER],
+    queryFn: async () =>
+      await getMasterApi({
+        page: 1,
+        limit: 100,
+        types: ["color", "gender", "product-collection"],
+      }),
+  });
+
+  const { data: categoryData } = useQuery({
+    queryKey: [GET_ALL_CATEGORY],
+    queryFn: async () =>
+      await getCategoryApi({
+        page: 1,
+        limit: 100,
+      }),
+  });
+
+  const { data: batchData } = useQuery({
+    queryKey: [GET_ALL_PRODUCT_BATCH],
+    queryFn: async () =>
+      await getBatchApi({
+        page: 1,
+        limit: 100,
+      }),
+  });
+
+  const category = watch("productList.category");
+
+  const { data: sizeData } = useQuery({
+    queryKey: [GET_ALL_FILTER, category],
+    queryFn: async () =>
+      await getFilterApi({
+        page: 1,
+        limit: 100,
+        category,
+        type: "6798b34aaeb9c16dd25aa381",
+      }),
+  });
+
+  const colorList = masterData?.data?.color;
+  const genderList = masterData?.data?.gender;
+  const productCollection = masterData?.data?.["product-collection"];
+  const batchList = batchData?.data;
+  const categoryList = categoryData?.data;
+  const sizeList = sizeData?.data;
+
   // Create Product Mutation
   const createProductMutation = useMutation({
     mutationFn: (payload: ICreateProductApi) => createProductApi(payload),
@@ -98,24 +167,27 @@ const CreateProduct = () => {
   });
 
   // Form Submit Handler
-  const onSubmit: SubmitHandler<IProductFormFields> = async (data) => {
-    setScreenLoader(true);
+  const onSubmit: SubmitHandler<IProductSchemaFormFields> = async (data) => {
+    // setScreenLoader(true);
 
-    const { imgLink, description, variations, batchId } = data.detail;
-    const newImgLink = imgLink.map((val) => val.value);
+    const { imgLink, description, variations } = data.detail;
+    const newImgLink = imgLink.map((val: any) => val.value);
+
+    data.productList.imgLink = newImgLink[0]
 
     const formattedData: ICreateProductApi = {
       productList: data.productList,
       detail: {
-        batchId: batchId,
+        batchId: data.productList.batchId,
         description: description,
         imgLink: newImgLink,
         variations: variations,
       },
     };
-
     createProductMutation.mutate(formattedData);
   };
+
+  console.log({ errors });
 
   return (
     <>
@@ -141,11 +213,11 @@ const CreateProduct = () => {
 
             <FormGrid size={{ xs: 12, md: 6 }}>
               <FormLabel required>Color</FormLabel>
-              <OutlinedInput
-                {...register("productList.color")}
-                placeholder="Product Color"
-                size="small"
-              />
+              <Select {...register("productList.color")}>
+                {colorList?.map((e: any) => (
+                  <MenuItem value={e.name}>{e.name}</MenuItem>
+                ))}
+              </Select>
             </FormGrid>
 
             <FormGrid size={{ xs: 12, md: 6 }}>
@@ -179,46 +251,89 @@ const CreateProduct = () => {
             </FormGrid>
 
             <FormGrid size={{ xs: 12, md: 6 }}>
-              <FormLabel required>Gender</FormLabel>
-              <Select {...register("productList.gender")} defaultValue="M">
-                <MenuItem value="M">Male</MenuItem>
-                <MenuItem value="F">Female</MenuItem>
-                <MenuItem value="U">Unisex</MenuItem>
+              <FormLabel required>Batch</FormLabel>
+              <Select {...register("productList.batchId")}>
+                {batchList?.map((e: any) => (
+                  <MenuItem value={e.code}>{e.name}</MenuItem>
+                ))}
               </Select>
             </FormGrid>
+
+            <FormGrid size={{ xs: 12, md: 6 }}>
+              <FormLabel required>Category</FormLabel>
+              <Select {...register("productList.category")}>
+                {categoryList?.map((e: any) => (
+                  <MenuItem value={e.id}>{e.name}</MenuItem>
+                ))}
+              </Select>
+            </FormGrid>
+
+            <FormGrid size={{ xs: 12, md: 6 }}>
+              <FormLabel required>Gender</FormLabel>
+              <Select {...register("productList.gender")}>
+                {genderList?.map((e: any) => (
+                  <MenuItem value={e.id}>{e.name}</MenuItem>
+                ))}
+              </Select>
+            </FormGrid>
+
+            <FormGrid size={{ xs: 12, md: 6 }}>
+              <FormLabel required>Collection</FormLabel>
+              <Select
+                defaultValue={[]}
+                {...register("productList.collection")}
+                multiple
+              >
+                {productCollection?.map((e: any) => (
+                  <MenuItem value={e.name}>{e.name}</MenuItem>
+                ))}
+              </Select>
+            </FormGrid>
+
             <FormGrid size={{ xs: 12, md: 12 }}>
               <FormLabel required>Description</FormLabel>
-              <OutlinedInput
-                multiline
-                rows={4}
-                {...register("detail.description.productDetails")}
-                placeholder="Detailed product description"
+              <RichTextEditor
+                control={control}
+                name="detail.description.productDetails"
+                helperText={errors.detail?.description?.productDetails?.message}
+                isError={!!errors.detail?.description?.productDetails}
               />
             </FormGrid>
           </Grid>
 
           {/* Product Details Section */}
-        
 
           {/* Variations Section */}
-          <Typography variant="subtitle1" my={4}>
+          <Typography variant="subtitle1" my={4} mt={10}>
             Product Variations
           </Typography>
           {variationFields.map((field, index) => (
-            <Grid container spacing={3} key={field.id} alignItems="end">
-              <FormGrid size={{ xs: 12, md: 5 }}>
+            <Grid container spacing={3} mt={4} key={field.id} alignItems="end">
+              <Divider></Divider>
+              <FormGrid size={{ xs: 12, md: 3 }}>
                 <FormLabel required>Size</FormLabel>
-                <OutlinedInput
-                  {...register(`detail.variations.${index}.size`)}
-                  placeholder="Product Size"
-                  size="small"
-                />
+                <Select {...register(`detail.variations.${index}.size`)}>
+                  {sizeList?.map((e: any) => (
+                    <MenuItem value={e.name}>{e.name}</MenuItem>
+                  ))}
+                </Select>
               </FormGrid>
-              <FormGrid size={{ xs: 12, md: 5 }}>
+              <FormGrid size={{ xs: 12, md: 3 }}>
                 <FormLabel required>Price</FormLabel>
                 <OutlinedInput
                   type="number"
                   {...register(`detail.variations.${index}.price`, {
+                    setValueAs: Number,
+                  })}
+                  placeholder="Variation Price"
+                  size="small"
+                />
+              </FormGrid>
+              <FormGrid size={{ xs: 12, md: 3 }}>
+                <FormLabel required>Discount</FormLabel>
+                <OutlinedInput
+                  type="number"
+                  {...register(`detail.variations.${index}.discount`, {
                     setValueAs: Number,
                   })}
                   placeholder="Variation Price"
@@ -244,7 +359,9 @@ const CreateProduct = () => {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => appendVariation({ size: "", price: 1000.0 })}
+              onClick={() =>
+                appendVariation({ size: "", price: 0, discount: 0 })
+              }
             >
               Add Variation
             </Button>
@@ -259,7 +376,7 @@ const CreateProduct = () => {
               <FormGrid size={{ xs: 12, md: 10 }}>
                 <FormLabel required>Image URL</FormLabel>
                 <OutlinedInput
-                  {...register(`detail.imgLink.${index}`)}
+                  {...register(`detail.imgLink.${index}.value`)}
                   placeholder="Image URL"
                   size="small"
                 />
@@ -278,16 +395,16 @@ const CreateProduct = () => {
               )}
             </Grid>
           ))}
-          {/* 
+
           <Box my={2}>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => appendImage("")}
+              onClick={() => appendImage({ value: "" })}
             >
               Add Image
             </Button>
-          </Box> */}
+          </Box>
 
           <Box
             sx={[

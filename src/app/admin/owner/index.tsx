@@ -17,6 +17,7 @@ import CBackDrop from "../../../components/loader/CBackDrop";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import NoDataTable from "../../../components/ui/NoData";
+import PathConstants from "../../../routes/pathConstants";
 
 const OwnerPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -39,7 +40,7 @@ const OwnerPage = () => {
           <Button
             startIcon={<AddOutlinedIcon />}
             onClick={() => {
-              navigate("/owner/create");
+              navigate(PathConstants.CREATE_OWNER);
             }}
             sx={{my: 2}}
             variant="contained"

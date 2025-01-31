@@ -8,29 +8,42 @@ import {
   Box,
   Button,
   CircularProgress,
+  MenuItem,
+  Select,
   Typography,
 } from "@mui/material";
 
 import { z } from "zod";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import useToast from "../../../hooks/useToast";
-import { createFilterApi, ICreateFilter } from "../../../api/clothes/filter";
+import {
+  createFilterApi,
+  getFilterTypeApi,
+  ICreateFilter,
+  IGET_FILTER_TYPE,
+} from "../../../api/clothes/filter";
 import { getMutationErrorMsg } from "../../../utils/error";
 import CSnackbar from "../../../components/CSnackbar";
+import {
+  GET_ALL_CATEGORY,
+  GET_ALL_FILTER_TYPE,
+} from "../../../constants/react-query";
+import { getCategoryApi, IGET_CATEGORY } from "../../../api/clothes/category";
+import { API_GET_LIMIT } from "../../../constants/common";
+import CBackDrop from "../../../components/loader/CBackDrop";
+import useToast from "../../../hooks/useToast";
 
 const FormGrid = styled(Grid)(() => ({
   display: "flex",
   flexDirection: "column",
 }));
 
-
 const filterSchema = z.object({
   type: z.string(),
   name: z.string(),
-  category: z.string()
+  category: z.string(),
 });
 
 type IFormFields = z.infer<typeof filterSchema>;
@@ -41,10 +54,23 @@ const CreateFilterTypePage = () => {
   const {
     register,
     handleSubmit,
+    reset,
     control,
     formState: { errors },
   } = useForm<IFormFields>({
     resolver: zodResolver(filterSchema),
+  });
+
+  const { data: categoryList, isLoading: categoryLoading } = useQuery({
+    queryKey: [GET_ALL_CATEGORY],
+    queryFn: async () =>
+      await getCategoryApi({ page: 1, limit: API_GET_LIMIT }),
+  });
+
+  const { data: filterTypeList, isLoading: filterTypeLoading } = useQuery({
+    queryKey: [GET_ALL_FILTER_TYPE],
+    queryFn: async () =>
+      await getFilterTypeApi({ page: 1, limit: API_GET_LIMIT }),
   });
 
   const { toast, setToast, closeToast } = useToast();
@@ -53,7 +79,8 @@ const CreateFilterTypePage = () => {
   const createMutation = useMutation({
     mutationFn: (payload: ICreateFilter) => createFilterApi(payload),
     onSuccess: (data, id) => {
-      console.log(data)
+      reset()
+      setToast("success", "Filter Created Successfully")
       // navigate(PathConstants.OWNER);
     },
     onError: (error) => {
@@ -70,13 +97,14 @@ const CreateFilterTypePage = () => {
     createMutation.mutate(data);
   };
 
+
   console.log(errors);
 
   return (
     <>
       <Box sx={{ padding: { xs: 2, md: 5 } }}>
         <Typography variant="h4" marginY={4}>
-          Create Filter Type
+          Create Filter
         </Typography>
         <Box component={"form"} onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={3}>
@@ -87,9 +115,29 @@ const CreateFilterTypePage = () => {
               <OutlinedInput
                 type="text"
                 {...register("name")}
-                placeholder="John"
+                placeholder="Enter Filter Name Here"
                 size="small"
               />
+            </FormGrid>
+            <FormGrid size={{ xs: 12, md: 6 }}>
+              <FormLabel htmlFor="first-name" required>
+                Category
+              </FormLabel>
+              <Select label="Type" {...register("category")}>
+                {categoryList?.data?.map((e: IGET_CATEGORY) => (
+                  <MenuItem value={e.id}>{e.name}</MenuItem>
+                ))}
+              </Select>
+            </FormGrid>
+            <FormGrid size={{ xs: 12, md: 6 }}>
+              <FormLabel htmlFor="first-name" required>
+                Type
+              </FormLabel>
+              <Select label="Type" {...register("type")}>
+                {filterTypeList?.data?.map((e: IGET_FILTER_TYPE) => (
+                  <MenuItem value={e.id}>{e.name}</MenuItem>
+                ))}
+              </Select>
             </FormGrid>
           </Grid>
           <Box
@@ -98,7 +146,7 @@ const CreateFilterTypePage = () => {
                 display: "flex",
                 alignItems: "end",
                 pb: { xs: 12, sm: 0 },
-                mt: { xs: 2, sm: 0 },
+                mt: { xs: 2, sm: 3 },
                 mb: "60px",
               },
               { justifyContent: "flex-end" },
@@ -114,12 +162,7 @@ const CreateFilterTypePage = () => {
           </Box>
         </Box>
       </Box>
-      <Backdrop
-        sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
-        open={screenLoader}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
+      <CBackDrop screenLoader={categoryLoading || filterTypeLoading} />
       <CSnackbar
         handleClose={closeToast}
         message={toast.message}

@@ -9,7 +9,7 @@ import {
 
 import { SidebarHeader } from "./SidebarHeader";
 import AcUnitIcon from "@mui/icons-material/AcUnit";
-import { Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import { navList } from "../../data/navbar";
 import { useBoundStore } from "../../store/store";
 import { ROLE } from "../../constants/common";
@@ -70,13 +70,18 @@ const Sidebar = () => {
               <SubMenu label={ele.label} icon={<AcUnitIcon />}>
                 {ele.children &&
                   ele.children.map((chi) => (
-                    <Link to={chi.path}>
-                      <MenuItem key={chi.id}> {chi.label} </MenuItem>
-                    </Link>
+                    <MenuItem
+                      component={<Link to={chi.path}></Link>}
+                      key={chi.id}
+                    >
+                      {" "}
+                      {chi.label}{" "}
+                    </MenuItem>
                   ))}
               </SubMenu>
             </Menu>
           ))}
+          <Button onClick={logout}>Logout</Button>
         </div>
       </MUISidebar>
     </div>

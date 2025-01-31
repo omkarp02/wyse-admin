@@ -1,1 +1,11 @@
 export const GET_ALL_OWNER = 'get-all-owners'
+export const GET_ALL_CATEGORY = 'get-all-categories'
+export const GET_ALL_FILTER_TYPE = 'get-all-filter-type'
+export const GET_ALL_FILTER = 'get-all-filter'
+export const GET_ALL_MASTER = 'get-all-master'
+export const GET_ALL_CITY = 'get-all-city'
+export const GET_ALL_STATE = 'get-all-state'
+
+export const GET_ALL_BUSSINESS = 'get-all-bussiness'
+export const GET_ALL_SIZE = 'get-all-size'
+export const GET_ALL_PRODUCT_BATCH = 'get-all-product-batch'

@@ -27,6 +27,7 @@ export const productSchema = z.object({
       z.object({
         size: z.string().min(1, "Size is required"),
         price: z.number().min(0, "Price must be positive"),
+        discount: z.number().min(0, "Invalid Discount").max(100, "Invalid Discount"),
       })
     ),
     imgLink: z
@@ -52,3 +53,8 @@ export const productSchema = z.object({
     tags: z.array(z.string()),
   }),
 });
+
+export type IProductSchemaFormFields = z.infer<typeof productSchema>;
+ 
+
+

@@ -13,56 +13,61 @@ import {
   Button,
   CircularProgress,
   FormControl,
+  MenuItem,
   Radio,
   RadioGroup,
+  Select,
   Typography,
 } from "@mui/material";
 
 import { z } from "zod";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { nameSchema } from "../../../../lib/zod-schema/common";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  IMasterCityFormFields,
+  IMasterStateFormFields,
+  masterCitySchema,
+  masterStateSchema,
+} from "../../../../features/admin/master/zod-schema";
 import useToast from "../../../../hooks/useToast";
-import { createFilterApi, createFilterTypeApi, ICreateFilterType } from "../../../../api/clothes/filter";
+import {
+  createStateApi,
+  getStateApi,
+  ICreateStateApi,
+} from "../../../../api/master/state";
 import { getMutationErrorMsg } from "../../../../utils/error";
 import CSnackbar from "../../../../components/CSnackbar";
+import { createCityApi, ICreateCityApi } from "../../../../api/master/city";
+import { GET_ALL_STATE } from "../../../../constants/react-query";
+import { API_GET_LIMIT } from "../../../../constants/common";
 
 const FormGrid = styled(Grid)(() => ({
   display: "flex",
   flexDirection: "column",
 }));
 
-
-const filterSchema = z.object({
-  name: nameSchema,
-});
-
-type IFormFields = z.infer<typeof filterSchema>;
-
-const CreateFilterTypePage = () => {
-
+const CreateMasterCityPage = () => {
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<IFormFields>({
-    resolver: zodResolver(filterSchema),
+  } = useForm<IMasterCityFormFields>({
+    resolver: zodResolver(masterCitySchema),
   });
 
   const { toast, setToast, closeToast } = useToast();
   const [screenLoader, setScreenLoader] = React.useState(false);
 
   const createMutation = useMutation({
-    mutationFn: (payload: ICreateFilterType) => createFilterTypeApi(payload),
+    mutationFn: (payload: ICreateCityApi) => createCityApi(payload),
     onSuccess: (data, id) => {
-      reset()
-      setToast("success", "Fitler Type Created Successfully");
+      reset();
+      setToast("success", "City Created Successfully");
     },
     onError: (error) => {
-      const { msg } = getMutationErrorMsg(error);
+      const { msg } = getMutationErrorMsg(error, "State");
       setToast("error", msg);
     },
     onSettled: () => {
@@ -70,18 +75,23 @@ const CreateFilterTypePage = () => {
     },
   });
 
-  const onSubmit: SubmitHandler<IFormFields> = async (data) => {
+  const { data } = useQuery({
+    queryKey: [GET_ALL_STATE],
+    queryFn: async () => await getStateApi({ page: 1, limit: API_GET_LIMIT }),
+  });
+
+  const onSubmit: SubmitHandler<IMasterCityFormFields> = async (data) => {
     setScreenLoader(true);
     createMutation.mutate(data);
   };
 
-  console.log(errors);
+  const stateList = data?.data;
 
   return (
     <>
       <Box sx={{ padding: { xs: 2, md: 5 } }}>
         <Typography variant="h4" marginY={4}>
-          Create Filter Type
+          Create City
         </Typography>
         <Box component={"form"} onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={3}>
@@ -95,6 +105,16 @@ const CreateFilterTypePage = () => {
                 placeholder="Enter Filter Name here"
                 size="small"
               />
+            </FormGrid>
+            <FormGrid size={{ xs: 12, md: 6 }}>
+              <FormLabel htmlFor="first-name" required>
+                State
+              </FormLabel>
+              <Select defaultValue={""} label="" {...register("stateId")}>
+                {stateList?.map((e: any) => (
+                  <MenuItem  value={e.id}>{e.name}</MenuItem>
+                ))}
+              </Select>
             </FormGrid>
           </Grid>
           <Box
@@ -135,4 +155,4 @@ const CreateFilterTypePage = () => {
   );
 };
 
-export default CreateFilterTypePage;
+export default CreateMasterCityPage;

@@ -14,3 +14,4 @@ export const getToken = () => {
     return persistedToken;
   }
 };
+
