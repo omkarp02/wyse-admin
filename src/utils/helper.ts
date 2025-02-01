@@ -15,3 +15,13 @@ export const getToken = () => {
   }
 };
 
+export function slugify(text: string) {
+  return text
+    .toLowerCase() // Convert to lowercase
+    .trim() // Remove leading & trailing spaces
+    .normalize("NFD") // Normalize accents (e.g., é → e)
+    .replace(/[\u0300-\u036f]/g, "") // Remove diacritical marks
+    .replace(/[^a-z0-9 -]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replace spaces with hyphens
+    .replace(/-+/g, "-"); // Remove duplicate hyphens
+}

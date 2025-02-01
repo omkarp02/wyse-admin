@@ -26,18 +26,15 @@ type IProductDetail = {
     price: number;
   }[];
   imgLink: string[];
-  batchId: string;
 };
 
 type IProductList = {
-  name: string;
   color: string;
   price: number;
   imgLink: string;
   stock: number;
   discount: number;
   category: string;
-  batchId: string;
   gender: string;
   collection: string[];
   tags: string[];
@@ -46,6 +43,9 @@ type IProductList = {
 export type ICreateProductApi = {
   detail: IProductDetail;
   productList: IProductList;
+  slug: string;
+  name: string;
+  batchId: string;
 };
 
 export const createProductApi = async (payload: ICreateProductApi) => {

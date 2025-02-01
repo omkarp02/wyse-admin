@@ -38,10 +38,8 @@ export const INITIAL_PRODUCT_VALUES: IFormFields = {
           "https://nobero.com/cdn/shop/files/2PackOversizedCargo8_8d462eb6-8cee-40f1-9071-80c8236ae518.webp",
       },
     ],
-    batchId: "677e52c416c63b4e447f4cf0",
   },
   productList: {
-    name: "Zip-Pocket Joggers Olive Green",
     color: "Olive",
     price: 800,
     imgLink:
@@ -49,9 +47,12 @@ export const INITIAL_PRODUCT_VALUES: IFormFields = {
     stock: 10,
     discount: 50,
     category: "67776e638a1cf8d369ebc97e",
-    batchId: "677e52c416c63b4e447f4cf0",
     gender: "M",
     collection: ["joggers", "pants"],
     tags: ["name"],
   },
+  batchId: "677e52c416c63b4e447f4cf0",
+  name: "Zip-Pocket Joggers Olive Green",
+  slug: "zip-pocket"
+
 };

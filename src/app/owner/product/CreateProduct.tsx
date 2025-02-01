@@ -53,6 +53,7 @@ import RichTextEditor from "../../../components/formfields/RichTextEditor";
 import { getCategoryApi } from "../../../api/clothes/category";
 import { getBatchApi } from "../../../api/clothes/batch";
 import { getFilterApi } from "../../../api/clothes/filter";
+import { slugify } from "../../../utils/helper";
 
 // Zod Schema for Product Creation
 
@@ -73,6 +74,7 @@ const CreateProduct = () => {
     register,
     handleSubmit,
     watch,
+    setValue,
     getValues,
     control,
     formState: { errors },
@@ -132,6 +134,7 @@ const CreateProduct = () => {
   });
 
   const category = watch("productList.category");
+  const name = watch("name");
 
   const { data: sizeData } = useQuery({
     queryKey: [GET_ALL_FILTER, category],
@@ -168,24 +171,30 @@ const CreateProduct = () => {
 
   // Form Submit Handler
   const onSubmit: SubmitHandler<IProductSchemaFormFields> = async (data) => {
-    // setScreenLoader(true);
+    setScreenLoader(true);
 
     const { imgLink, description, variations } = data.detail;
     const newImgLink = imgLink.map((val: any) => val.value);
 
-    data.productList.imgLink = newImgLink[0]
+    data.productList.imgLink = newImgLink[0];
 
     const formattedData: ICreateProductApi = {
       productList: data.productList,
       detail: {
-        batchId: data.productList.batchId,
         description: description,
         imgLink: newImgLink,
         variations: variations,
       },
+      batchId: data.batchId,
+      slug: data.slug,
+      name: data.name,
     };
     createProductMutation.mutate(formattedData);
   };
+
+  React.useEffect(() => {
+    setValue("slug", slugify(name));
+  }, [name]);
 
   console.log({ errors });
 
@@ -205,8 +214,16 @@ const CreateProduct = () => {
             <FormGrid size={{ xs: 12, md: 6 }}>
               <FormLabel required>Product Name</FormLabel>
               <OutlinedInput
-                {...register("productList.name")}
+                {...register("name")}
                 placeholder="Product Name"
+                size="small"
+              />
+            </FormGrid>
+            <FormGrid size={{ xs: 12, md: 6 }}>
+              <FormLabel required>Product Slug</FormLabel>
+              <OutlinedInput
+                {...register("slug")}
+                placeholder="Product Slug"
                 size="small"
               />
             </FormGrid>
@@ -252,7 +269,7 @@ const CreateProduct = () => {
 
             <FormGrid size={{ xs: 12, md: 6 }}>
               <FormLabel required>Batch</FormLabel>
-              <Select {...register("productList.batchId")}>
+              <Select {...register("batchId")}>
                 {batchList?.map((e: any) => (
                   <MenuItem value={e.code}>{e.name}</MenuItem>
                 ))}

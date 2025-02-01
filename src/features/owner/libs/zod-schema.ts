@@ -2,6 +2,9 @@ import { z } from "zod";
 import { websiteSchema } from "../../../lib/zod-schema/common";
 
 export const productSchema = z.object({
+  slug: z.string(),
+  batchId: z.string(),
+  name: z.string().min(1, "Product name is required"),
   detail: z.object({
     description: z.object({
       productDetails: z.string().min(1, "Product details are required"),
@@ -37,17 +40,14 @@ export const productSchema = z.object({
         })
       )
       .min(1, "At least one image is required"),
-    batchId: z.string(),
   }),
   productList: z.object({
-    name: z.string().min(1, "Product name is required"),
     color: z.string().min(1, "Color is required"),
     price: z.number().min(0, "Price must be positive"),
     imgLink: z.string().url("Invalid image URL"),
     stock: z.number().min(0, "Stock must be non-negative"),
     discount: z.number(),
     category: z.string().min(1, "Category is required"),
-    batchId: z.string(),
     gender: z.string().min(1, "Gender is required"),
     collection: z.array(z.string()),
     tags: z.array(z.string()),
